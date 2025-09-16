@@ -1,0 +1,19 @@
+{
+  "name": "garmin-friends",
+  "version": "1.0.0",
+  "description": "Garmin friend - Kakaotalk FAQs and Garmin related information",
+  "main": "index.html",
+  "scripts": {
+    "start": "firebase serve",
+    "deploy": "firebase deploy"
+  },
+  "keywords": ["garmin", "kakaotalk", "friends", "firebase"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "firebase": "^10.7.1"
+  },
+  "devDependencies": {
+    "firebase-tools": "^13.0.0"
+  }
+}
