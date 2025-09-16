@@ -24,24 +24,28 @@ export function AuthProvider({ children }) {
       const userRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userRef);
       
-      const userData = {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        lastLogin: new Date(),
-        isAdmin: false // Default to false, admins must be manually set
-      };
-
       if (!userDoc.exists()) {
-        // New user - create profile
-        await setDoc(userRef, {
-          ...userData,
-          createdAt: new Date()
-        });
+        // New user - create profile with default isAdmin: false
+        const newUserData = {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+          lastLogin: new Date(),
+          createdAt: new Date(),
+          isAdmin: false // Only set to false for new users
+        };
+        await setDoc(userRef, newUserData);
       } else {
-        // Existing user - update last login
-        await setDoc(userRef, userData, { merge: true });
+        // Existing user - only update login info, preserve isAdmin status
+        const updateData = {
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+          lastLogin: new Date()
+          // Deliberately NOT including isAdmin to preserve existing value
+        };
+        await setDoc(userRef, updateData, { merge: true });
       }
 
       return result;
@@ -102,14 +106,6 @@ export function AuthProvider({ children }) {
     logout,
     isAdmin: userProfile?.isAdmin || false
   };
-
-  // Debug logging
-  console.log('AuthContext value:', {
-    hasUser: !!user,
-    userEmail: user?.email,
-    userProfile,
-    isAdmin: value.isAdmin
-  });
 
   return (
     <AuthContext.Provider value={value}>

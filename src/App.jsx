@@ -16,10 +16,7 @@ import './App.css';
 // Navigation component
 function Navigation() {
   const location = useLocation();
-  const { isAdmin, user, userProfile } = useAuth();
-  
-  // Debug logging
-  console.log('Navigation - isAdmin:', isAdmin, 'user:', user?.email, 'userProfile:', userProfile);
+  const { isAdmin } = useAuth();
   
   const navItems = [
     { path: '/', label: '홈', icon: '🏠' },
@@ -42,12 +39,6 @@ function Navigation() {
           Garmin Friends
         </h2>
         <p>가민 커뮤니티</p>
-        {/* Temporary debug info */}
-        {user && (
-          <small style={{ fontSize: '10px', opacity: 0.7 }}>
-            Debug: isAdmin={String(isAdmin)}, userProfile.isAdmin={String(userProfile?.isAdmin)}
-          </small>
-        )}
       </div>
       <ul className="nav-menu">
         <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
