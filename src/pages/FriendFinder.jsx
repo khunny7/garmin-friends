@@ -3,12 +3,13 @@ import { useAuth } from '../hooks/useAuth';
 import { friendPostsService } from '../services/firebaseService';
 
 function FriendFinder() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     introduction: '',
@@ -27,6 +28,16 @@ function FriendFinder() {
   useEffect(() => {
     loadFriendPosts();
   }, []);
+
+  // Auto-fill user name when form is opened
+  useEffect(() => {
+    if (showCreateForm && user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.displayName || ''
+      }));
+    }
+  }, [showCreateForm, user]);
 
   const loadFriendPosts = async () => {
     try {
@@ -95,7 +106,7 @@ function FriendFinder() {
     }
   };
 
-  const handleLike = async (postDocId, postId) => {
+  const handleLike = async (postDocId) => {
     if (!user) {
       alert('로그인이 필요합니다.');
       return;
@@ -121,6 +132,32 @@ function FriendFinder() {
     } catch (err) {
       console.error('Error toggling like:', err);
       alert('좋아요 처리에 실패했습니다.');
+    }
+  };
+
+  const handleDelete = async (postDocId, postAuthor) => {
+    // Check if user can delete (author or admin)
+    if (!user || (user.uid !== postAuthor && !isAdmin)) {
+      alert('삭제 권한이 없습니다.');
+      return;
+    }
+
+    if (!confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      setDeleting(postDocId);
+      await friendPostsService.delete(postDocId);
+      
+      // Remove from local state
+      setPosts(prev => prev.filter(post => post.docId !== postDocId));
+      alert('게시글이 삭제되었습니다.');
+    } catch (err) {
+      console.error('Error deleting post:', err);
+      setError('게시글 삭제에 실패했습니다.');
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -212,13 +249,14 @@ function FriendFinder() {
             alignItems: 'center', 
             justifyContent: 'center',
             zIndex: 1000,
-            padding: 'var(--spacing-md)'
+            padding: 'var(--spacing-sm)'
           }}>
             <div className="card" style={{ 
               maxWidth: '500px', 
               width: '100%', 
-              maxHeight: '90vh', 
-              overflowY: 'auto' 
+              maxHeight: '95vh', 
+              overflowY: 'auto',
+              margin: 'var(--spacing-sm)'
             }}>
               <div style={{ 
                 display: 'flex', 
@@ -272,14 +310,13 @@ function FriendFinder() {
                     marginBottom: 'var(--spacing-xs)', 
                     fontWeight: '500' 
                   }}>
-                    자기소개 *
+                    자기소개
                   </label>
                   <textarea
                     name="introduction"
                     value={formData.introduction}
                     onChange={handleInputChange}
-                    placeholder="자신을 소개하고 어떤 운동을 함께 하고 싶은지 적어주세요"
-                    required
+                    placeholder="자신을 소개하고 어떤 운동을 함께 하고 싶은지 적어주세요 (선택사항)"
                     rows={4}
                     style={{
                       width: '100%',
@@ -315,8 +352,12 @@ function FriendFinder() {
                       fontSize: 'var(--font-size-base)'
                     }}
                   />
-                  <small style={{ color: 'var(--text-secondary)', fontSize: 'var(--font-size-sm)' }}>
-                    가민 커넥트에서 프로필 → 공유 → 링크 복사
+                  <small style={{ color: 'var(--text-secondary)', fontSize: 'var(--font-size-sm)', display: 'block', marginTop: 'var(--spacing-xs)' }}>
+                    <strong>프로필 URL 얻는 방법:</strong><br/>
+                    1. 가민 커넥트 앱 또는 웹사이트에 로그인<br/>
+                    2. 프로필 → 설정(⚙️) → 개인정보 보호<br/>
+                    3. "활동 공개 범위"를 "모든 사람"으로 설정<br/>
+                    4. 프로필 페이지에서 URL 복사 (예: https://connect.garmin.com/modern/profile/your-username)
                   </small>
                 </div>
 
@@ -441,7 +482,7 @@ function FriendFinder() {
                   justifyContent: 'space-between', 
                   alignItems: 'flex-start',
                   marginBottom: 'var(--spacing-md)' 
-                }}>
+                }} className="post-header">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
                     <div style={{ 
                       width: '50px', 
@@ -468,7 +509,46 @@ function FriendFinder() {
                     </div>
                   </div>
                   
-                  <div style={{ textAlign: 'right' }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 'var(--spacing-sm)',
+                    textAlign: 'right' 
+                  }}>
+                    {/* Delete button for author or admin */}
+                    {user && (user.uid === post.author || isAdmin) && (
+                      <button
+                        onClick={() => handleDelete(post.docId, post.author)}
+                        disabled={deleting === post.docId}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--text-secondary)',
+                          fontSize: 'var(--font-size-lg)',
+                          cursor: deleting === post.docId ? 'not-allowed' : 'pointer',
+                          padding: 'var(--spacing-xs)',
+                          borderRadius: 'var(--radius-sm)',
+                          transition: 'all 0.2s ease',
+                          opacity: deleting === post.docId ? 0.5 : 1
+                        }}
+                        title="게시글 삭제"
+                        onMouseEnter={(e) => {
+                          if (deleting !== post.docId) {
+                            e.target.style.backgroundColor = 'rgba(220, 53, 69, 0.1)';
+                            e.target.style.color = '#dc3545';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (deleting !== post.docId) {
+                            e.target.style.backgroundColor = 'transparent';
+                            e.target.style.color = 'var(--text-secondary)';
+                          }
+                        }}
+                      >
+                        {deleting === post.docId ? '⏳' : '🗑️'}
+                      </button>
+                    )}
+                    
                     <div style={{ 
                       fontSize: 'var(--font-size-sm)', 
                       color: isExpiring ? 'var(--danger-color)' : 'var(--text-secondary)',
@@ -518,14 +598,20 @@ function FriendFinder() {
                   justifyContent: 'space-between', 
                   alignItems: 'center',
                   paddingTop: 'var(--spacing-md)',
-                  borderTop: '1px solid var(--border-color)'
-                }}>
+                  borderTop: '1px solid var(--border-color)',
+                  gap: 'var(--spacing-sm)',
+                  flexWrap: 'wrap'
+                }} className="post-actions">
                   <a
                     href={post.garminProfileUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn btn-primary"
-                    style={{ textDecoration: 'none' }}
+                    style={{ 
+                      textDecoration: 'none',
+                      flex: '1',
+                      minWidth: '140px'
+                    }}
                   >
                     🔗 가민 프로필 보기
                   </a>
@@ -536,7 +622,7 @@ function FriendFinder() {
                     gap: 'var(--spacing-sm)' 
                   }}>
                     <button 
-                      onClick={() => handleLike(post.docId, post.id)}
+                      onClick={() => handleLike(post.docId)}
                       style={{ 
                         background: 'none', 
                         border: 'none', 
@@ -545,7 +631,10 @@ function FriendFinder() {
                         alignItems: 'center',
                         gap: 'var(--spacing-xs)',
                         color: (post.likedBy || []).includes(user?.uid) ? 'var(--primary-color)' : 'var(--text-secondary)',
-                        fontSize: 'var(--font-size-sm)'
+                        fontSize: 'var(--font-size-sm)',
+                        padding: 'var(--spacing-xs)',
+                        borderRadius: 'var(--radius-sm)',
+                        transition: 'all 0.2s ease'
                       }}
                     >
                       ❤️ {post.likes}

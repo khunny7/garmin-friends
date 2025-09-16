@@ -316,35 +316,171 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  /* Navigation improvements for mobile */
+  .nav-brand {
+    padding: var(--spacing-md) var(--spacing-lg);
+  }
+  
+  .nav-brand h2 {
+    font-size: var(--font-size-xl);
+  }
+  
+  .nav-brand p {
+    font-size: var(--font-size-xs);
+  }
+  
   .nav-menu {
-    padding: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
     gap: var(--spacing-xs);
+    flex-wrap: wrap;
+    justify-content: center;
   }
   
   .nav-link {
     font-size: var(--font-size-xs);
     padding: var(--spacing-xs) var(--spacing-sm);
+    white-space: nowrap;
   }
   
   .nav-icon {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
   }
   
+  .nav-auth {
+    margin-left: 0;
+    padding-left: 0;
+    width: 100%;
+    text-align: center;
+    margin-top: var(--spacing-xs);
+  }
+  
+  /* Page layout adjustments */
   .page-header {
-    padding: var(--spacing-lg) 0;
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+  
+  .page-title {
+    font-size: var(--font-size-2xl);
+    line-height: 1.3;
+  }
+  
+  .page-subtitle {
+    font-size: var(--font-size-lg);
   }
   
   .main-content {
     padding: var(--spacing-md) 0;
   }
   
+  /* Grid layouts for mobile */
   .grid-2,
   .grid-3 {
     grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  /* Feature cards mobile optimization */
+  .feature-card {
+    padding: var(--spacing-lg);
+    text-align: left;
+  }
+  
+  .feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .feature-title {
+    font-size: var(--font-size-lg);
+  }
+  
+  .feature-description {
+    font-size: var(--font-size-sm);
+  }
+  
+  /* Chat sections mobile optimization */
+  .chat-section {
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .chat-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: var(--font-size-lg);
+  }
+  
+  .chat-user {
+    font-size: var(--font-size-base);
+  }
+  
+  .chat-bubble {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* Even smaller screens (mobile portrait) */
+@media (max-width: 480px) {
+  .nav-menu {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    align-items: stretch;
+  }
+  
+  .nav-link {
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .page-header {
+    padding: var(--spacing-md);
+  }
+  
+  .page-title {
+    font-size: var(--font-size-xl);
+  }
+  
+  .page-subtitle {
+    font-size: var(--font-size-base);
   }
   
   .feature-card {
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
+    text-align: center;
+  }
+  
+  .chat-section {
+    padding: var(--spacing-sm);
+  }
+  
+  /* Quick actions mobile layout */
+  .quick-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  
+  .quick-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* FriendFinder mobile optimizations */
+  .post-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: var(--spacing-md) !important;
+  }
+  
+  .post-actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .post-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: var(--spacing-sm) !important;
   }
 }
 

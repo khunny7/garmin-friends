@@ -100,10 +100,17 @@ function Home() {
         {/* Quick Actions */}
         <div className="text-center" style={{ marginTop: 'var(--spacing-2xl)' }}>
           <h3 style={{ marginBottom: 'var(--spacing-lg)' }}>빠른 시작</h3>
-          <div style={{ display: 'flex', gap: 'var(--spacing-md)', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div style={{ 
+            display: 'flex', 
+            gap: 'var(--spacing-md)', 
+            justifyContent: 'center', 
+            flexWrap: 'wrap',
+            alignItems: 'center'
+          }} className="quick-actions">
             <Link to="/faq" className="btn btn-primary">FAQ 보기</Link>
             <Link to="/qna" className="btn btn-secondary">질문하기</Link>
             <Link to="/garmin" className="btn btn-accent">제품 정보</Link>
+            <Link to="/friend-finder" className="btn btn-primary">친구 찾기</Link>
           </div>
         </div>
       </div>
