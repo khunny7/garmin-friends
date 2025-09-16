@@ -31,8 +31,8 @@ function Navigation() {
   return (
     <nav className="navigation">
       <div className="nav-brand">
-        <h2>🟡 Garmin Friends</h2>
-        <p>가민 × 카카오톡</p>
+        <h2>🟡 가민 커넥트 친구 만들기</h2>
+        <p>카카오톡 오픈 채팅방, 가민 커넥트 친구 만들기 웹사이트</p>
       </div>
       <ul className="nav-menu">
         <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
@@ -70,7 +70,7 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="container">
-        <p>&copy; 2024 Garmin Friends. 카카오톡과 가민을 연결하는 정보 허브</p>
+        <p>&copy; 2024 Garmin Friends. 가민 커뮤니티와 정보 허브</p>
         <p>Built with React + Vite • Hosted on Firebase</p>
       </div>
     </footer>

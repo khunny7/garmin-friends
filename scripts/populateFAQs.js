@@ -15,7 +15,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// FAQ data extracted from KakaoTalk chats
+// FAQ data for general Garmin community
 const faqsFromChats = [
   {
     id: 1,
@@ -27,14 +27,14 @@ const faqsFromChats = [
   {
     id: 2,
     category: 'notification',
-    question: '카카오톡 알림이 워치에 오지 않아요',
-    answer: '다음 사항들을 확인해보세요:\n\n📱 스마트폰 설정:\n• 카카오톡 알림이 켜져 있는지 확인\n• 방해금지 모드가 꺼져 있는지 확인\n\n⌚ Garmin Connect 앱:\n• 알림 및 앱 설정 → 카카오톡 활성화\n• 스마트 알림이 켜져 있는지 확인\n\n🔄 재시작:\n• 워치와 스마트폰 모두 재시작\n• Garmin Connect 앱 재시작',
-    tags: ['알림', '카카오톡', '문제해결', '설정']
+    question: '메신저 알림이 워치에 오지 않아요',
+    answer: '다음 사항들을 확인해보세요:\n\n📱 스마트폰 설정:\n• 해당 앱의 알림이 켜져 있는지 확인\n• 방해금지 모드가 꺼져 있는지 확인\n\n⌚ Garmin Connect 앱:\n• 알림 및 앱 설정 → 해당 앱 활성화\n• 스마트 알림이 켜져 있는지 확인\n\n🔄 재시작:\n• 워치와 스마트폰 모두 재시작\n• Garmin Connect 앱 재시작',
+    tags: ['알림', '메신저', '문제해결', '설정']
   },
   {
     id: 3,
     category: 'features',
-    question: '워치에서 카카오톡 메시지에 답장할 수 있나요?',
+    question: '워치에서 메시지에 답장할 수 있나요?',
     answer: '네, 일부 가민 워치에서 가능합니다!\n\n✅ 지원 모델:\n• Venu 2 시리즈\n• Forerunner 945/955\n• fēnix 7 시리즈\n• Epix Gen 2\n\n📱 요구사항:\n• Android 스마트폰만 지원 (iOS 불가)\n• Garmin Connect 앱 최신 버전\n\n⚙️ 설정방법:\n1. Garmin Connect → 디바이스 설정\n2. 알림 및 앱 → 텍스트 답장\n3. 미리 설정된 답장 메시지 추가',
     tags: ['답장', '기능', 'Android', '호환성']
   },
@@ -49,7 +49,7 @@ const faqsFromChats = [
     id: 5,
     category: 'features',
     question: '어떤 앱의 알림을 받을 수 있나요?',
-    answer: '가민 워치에서 받을 수 있는 알림들:\n\n💬 메신저:\n• 카카오톡, 라인, 텔레그램\n• WhatsApp, Messenger\n\n📧 커뮤니케이션:\n• 문자메시지 (SMS)\n• 이메일 (Gmail, 네이버메일 등)\n• 전화 착신\n\n📱 소셜미디어:\n• 인스타그램, 페이스북\n• 트위터, 유튜브\n\n📅 기타:\n• 캘린더 일정\n• 뉴스 앱\n• 배달/쇼핑 앱\n\n⚙️ 설정: Garmin Connect → 알림 및 앱에서 개별 설정 가능',
+    answer: '가민 워치에서 받을 수 있는 알림들:\n\n💬 메신저:\n• 메신저, 라인, 텔레그램\n• WhatsApp, Messenger\n\n📧 커뮤니케이션:\n• 문자메시지 (SMS)\n• 이메일 (Gmail, 네이버메일 등)\n• 전화 착신\n\n📱 소셜미디어:\n• 인스타그램, 페이스북\n• 트위터, 유튜브\n\n📅 기타:\n• 캘린더 일정\n• 뉴스 앱\n• 배달/쇼핑 앱\n\n⚙️ 설정: Garmin Connect → 알림 및 앱에서 개별 설정 가능',
     tags: ['알림', '앱', '호환성', '지원앱']
   },
   {

@@ -50,9 +50,9 @@ Stores frequently asked questions and answers.
 {
   id: 1,
   category: "connection",
-  question: "가민 워치를 카카오톡과 어떻게 연결하나요?",
-  answer: "1. Garmin Connect 앱을 설치합니다.\n2. 앱에서 알림 설정으로 이동합니다.\n3. 카카오톡을 활성화합니다.\n4. 워치에서 알림을 허용합니다.",
-  tags: ["연결", "설정", "카카오톡"],
+  question: "가민 워치에서 스마트폰 알림을 어떻게 받나요?",
+  answer: "1. Garmin Connect 앱을 설치합니다.\n2. 앱에서 알림 설정으로 이동합니다.\n3. 원하는 앱들을 활성화합니다.\n4. 워치에서 알림을 허용합니다.",
+  tags: ["연결", "설정", "알림"],
   createdAt: timestamp,
   updatedAt: timestamp,
   createdBy: "admin_uid",
@@ -84,8 +84,8 @@ Stores community questions and their answers.
 ```javascript
 {
   id: 1,
-  title: "Forerunner 245와 카카오톡 연동 문제",
-  question: "안녕하세요! Forerunner 245를 사용하고 있는데 카카오톡 알림이 간헐적으로만 와요. 설정은 다 맞게 한 것 같은데 왜 그럴까요?",
+  title: "Forerunner 245 알림 설정 문제",
+  question: "안녕하세요! Forerunner 245를 사용하고 있는데 스마트폰 알림이 간헐적으로만 와요. 설정은 다 맞게 한 것 같은데 왜 그럴까요?",
   category: "troubleshoot",
   author: "user_uid_123",
   authorName: "러닝맨123",

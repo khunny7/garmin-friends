@@ -29,8 +29,8 @@ function QNA() {
   const sampleQuestions = [
     {
       id: 1,
-      title: 'Forerunner 245와 카카오톡 연동 문제',
-      question: '안녕하세요! Forerunner 245를 사용하고 있는데 카카오톡 알림이 간헐적으로만 와요. 설정은 다 맞게 한 것 같은데 왜 그럴까요?',
+      title: 'Forerunner 245 알림 설정 문제',
+      question: '안녕하세요! Forerunner 245를 사용하고 있는데 스마트폰 알림이 간헐적으로만 와요. 설정은 다 맞게 한 것 같은데 왜 그럴까요?',
       author: '러닝맨123',
       date: '2024-01-15',
       category: 'troubleshoot',
@@ -45,7 +45,7 @@ function QNA() {
         },
         {
           id: 2,
-          content: 'Garmin Connect 앱의 알림 설정에서 카카오톡을 한 번 끄고 다시 켜보세요. 그리고 워치를 재부팅해보시면 해결될 거예요!',
+          content: 'Garmin Connect 앱의 알림 설정에서 앱을 한 번 끄고 다시 켜보세요. 그리고 워치를 재부팅해보시면 해결될 거예요!',
           author: '테크헬퍼',
           date: '2024-01-16',
           likes: 7
@@ -54,8 +54,8 @@ function QNA() {
     },
     {
       id: 2,
-      title: 'Venu 2에서 카카오톡 답장 기능 사용법',
-      question: 'Venu 2에서 카카오톡 메시지에 답장을 보낼 수 있다고 하는데, 어떻게 설정하나요? 안드로이드 폰 사용 중입니다.',
+      title: 'Venu 2에서 메시지 답장 기능 사용법',
+      question: 'Venu 2에서 메시지에 답장을 보낼 수 있다고 하는데, 어떻게 설정하나요? 안드로이드 폰 사용 중입니다.',
       author: '스마트워치초보',
       date: '2024-01-14',
       category: 'features',
@@ -73,7 +73,7 @@ function QNA() {
     {
       id: 3,
       title: 'iOS에서 가민 워치 알림 설정',
-      question: '아이폰 사용자인데 가민 워치로 카카오톡 알림을 받고 싶어요. 어떻게 설정해야 할까요?',
+      question: '아이폰 사용자인데 가민 워치로 메신저 알림을 받고 싶어요. 어떻게 설정해야 할까요?',
       author: '아이폰유저',
       date: '2024-01-13',
       category: 'setup',
@@ -81,7 +81,7 @@ function QNA() {
       answers: [
         {
           id: 4,
-          content: 'iOS 설정 > 알림 > 카카오톡에서 알림 허용을 켜고, Garmin Connect 앱에서도 카카오톡 알림을 활성화하세요. iOS는 안드로이드보다 제약이 좀 있어요.',
+          content: 'iOS 설정 > 알림에서 원하는 앱들의 알림 허용을 켜고, Garmin Connect 앱에서도 해당 앱 알림을 활성화하세요. iOS는 안드로이드보다 제약이 좀 있어요.',
           author: '가민iOS전문가',
           date: '2024-01-13',
           likes: 6
@@ -114,8 +114,8 @@ function QNA() {
       const sampleQuestions = [
         {
           id: 1,
-          title: 'Forerunner 245와 카카오톡 연동 문제',
-          question: '안녕하세요! Forerunner 245를 사용하고 있는데 카카오톡 알림이 간헐적으로만 와요.',
+          title: 'Forerunner 245 알림 설정 문제',
+          question: '안녕하세요! Forerunner 245를 사용하고 있는데 스마트폰 알림이 간헐적으로만 와요.',
           authorName: '러닝맨123',
           category: 'troubleshoot',
           likes: 5,

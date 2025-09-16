@@ -25,12 +25,12 @@ function GarminInfo() {
         '내장 GPS 및 멀티 위성 시스템',
         '30가지 이상 스포츠 앱',
         '최대 23일 스마트워치 모드 배터리',
-        '카카오톡 알림 지원',
+        '스마트 알림 지원',
         '음악 저장 및 재생'
       ],
       description: '진정한 러너를 위한 프리미엄 GPS 러닝 워치입니다. 고급 러닝 다이나믹스와 성능 모니터링을 제공합니다.',
-      kakaoFeatures: [
-        '카카오톡 메시지 알림',
+      smartFeatures: [
+        '메신저 알림',
         '미리 설정된 답장 전송 (Android)',
         '통화 알림',
         '캘린더 이벤트 알림'
@@ -51,8 +51,8 @@ function GarminInfo() {
         '30가지 이상 스포츠 앱'
       ],
       description: '건강과 라이프스타일을 위한 올인원 스마트워치입니다. 통화 기능과 건강 모니터링이 뛰어납니다.',
-      kakaoFeatures: [
-        '카카오톡 전체 메시지 확인',
+      smartFeatures: [
+        '전체 메시지 확인',
         '음성 답장 (Android)',
         '이모티콘 답장',
         'SNS 알림 (인스타그램, 페이스북 등)'
@@ -73,8 +73,8 @@ function GarminInfo() {
         '토포 맵 사전 설치'
       ],
       description: '극한의 모험을 위한 프리미엄 멀티스포츠 GPS 워치입니다. 견고함과 성능을 모두 갖췄습니다.',
-      kakaoFeatures: [
-        '카카오톡 알림',
+      smartFeatures: [
+        '스마트 알림',
         '긴급상황 연락처 알림',
         '날씨 정보',
         '캘린더 동기화'
@@ -95,8 +95,8 @@ function GarminInfo() {
         'Body Battery 에너지 모니터링'
       ],
       description: '액티브한 라이프스타일을 위한 GPS 스마트워치입니다. 피트니스와 웰니스 기능이 균형있게 구성되어 있습니다.',
-      kakaoFeatures: [
-        '카카오톡 메시지 알림',
+      smartFeatures: [
+        '메시지 알림',
         '기본 답장 템플릿',
         '통화 거부/수락',
         '음악 조절'
@@ -117,8 +117,8 @@ function GarminInfo() {
         '스마트 알림'
       ],
       description: '프리미엄 GPS 골프 워치로 코스에서의 모든 순간을 더욱 스마트하게 만들어줍니다.',
-      kakaoFeatures: [
-        '라운드 중 카카오톡 확인',
+      smartFeatures: [
+        '라운드 중 메시지 확인',
         '스코어 공유',
         '통화 알림',
         '일정 확인'
@@ -139,8 +139,8 @@ function GarminInfo() {
         '스마트 알림'
       ],
       description: '스타일과 건강을 모두 중시하는 여성을 위한 소형 스마트워치입니다.',
-      kakaoFeatures: [
-        '카카오톡 알림',
+      smartFeatures: [
+        '스마트 알림',
         '기본 답장 기능',
         '통화 알림',
         '일정 관리'
@@ -166,7 +166,7 @@ function GarminInfo() {
         <div className="container">
           <h1 className="page-title">⌚ 가민 제품 정보</h1>
           <p className="page-subtitle">
-            다양한 가민 제품과 카카오톡 연동 기능을 알아보세요
+            다양한 가민 제품과 스마트 기능을 알아보세요
           </p>
         </div>
       </div>
@@ -256,7 +256,7 @@ function GarminInfo() {
                   borderRadius: 'var(--radius-sm)',
                   display: 'inline-block'
                 }}>
-                  📱 카카오톡 연동 기능
+                  📱 스마트 기능
                 </h4>
                 <ul style={{ 
                   listStyle: 'none', 
@@ -264,7 +264,7 @@ function GarminInfo() {
                   margin: 0,
                   fontSize: 'var(--font-size-sm)'
                 }}>
-                  {product.kakaoFeatures.slice(0, 2).map((feature, index) => (
+                  {product.smartFeatures.slice(0, 2).map((feature, index) => (
                     <li key={index} style={{ 
                       padding: 'var(--spacing-xs) 0',
                       color: 'var(--text-secondary)'
@@ -375,13 +375,13 @@ function GarminInfo() {
               <div className="chat-section">
                 <div className="chat-header">
                   <div className="chat-avatar">📱</div>
-                  <div className="chat-user">카카오톡 연동 가이드</div>
+                  <div className="chat-user">스마트 기능 가이드</div>
                 </div>
                 <div className="chat-messages">
                   <div className="chat-bubble">
-                    이 제품으로 사용할 수 있는 카카오톡 기능들이에요! 💬
+                    이 제품으로 사용할 수 있는 스마트 기능들이에요! 💬
                   </div>
-                  {selectedProduct.kakaoFeatures.map((feature, index) => (
+                  {selectedProduct.smartFeatures.map((feature, index) => (
                     <div key={index} className="chat-bubble user">
                       {feature}
                     </div>
@@ -409,7 +409,7 @@ function GarminInfo() {
               • 골프: Approach 시리즈
             </div>
             <div className="chat-bubble">
-              카카오톡 연동을 중요하게 생각한다면 Venu 3나 Forerunner 965를 추천해요! 📱⌚
+              스마트 기능을 중요하게 생각한다면 Venu 3나 Forerunner 965를 추천해요! 📱⌚
             </div>
           </div>
         </div>
@@ -433,7 +433,7 @@ function GarminInfo() {
               <h4>스마트워치</h4>
               <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}>
                 Venu 3<br/>
-                최고의 카카오톡 연동 기능
+                최고의 스마트 기능
               </p>
             </div>
             <div style={{ textAlign: 'center' }}>

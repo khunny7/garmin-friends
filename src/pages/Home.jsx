@@ -7,12 +7,10 @@ function Home() {
       {/* Hero Section */}
       <div className="page-header">
         <div className="container">
-          <h1 className="page-title">🟡 Garmin Friends</h1>
-          <p className="page-subtitle">
-            카카오톡과 가민을 연결하는 정보 허브
-          </p>
+          <h1 className="page-title">가민 커넥트 친구 만들기</h1>
           <p style={{ marginTop: 'var(--spacing-md)', color: 'var(--text-secondary)' }}>
-            가민 제품 정보, FAQ, 사용자 질문답변을 한 곳에서 만나보세요
+            가민 커넥트 친구 만들기 카카오톡 오픈 채팅방을 위한 웹사이트 입니다. 자주 묻는 질문들, 질문과 답변, 가민 제품 정보 등을 위해 만들었습니다.
+            그리고 가민 유저들끼리 서로 친구 등록을 할수 있도록 도와줍니다.
           </p>
         </div>
       </div>
@@ -22,17 +20,17 @@ function Home() {
         <div className="chat-section fade-in">
           <div className="chat-header">
             <div className="chat-avatar">🤖</div>
-            <div className="chat-user">Garmin Bot</div>
+            <div className="chat-user">Garmin Community</div>
           </div>
           <div className="chat-messages">
             <div className="chat-bubble">
-              안녕하세요! Garmin Friends에 오신 것을 환영합니다! 👋
+              안녕하세요! 가민 커넥트 친구 만들기 커뮤니티에 오신 것을 환영합니다! 👋
             </div>
             <div className="chat-bubble">
-              가민 제품에 대한 궁금한 점이나 카카오톡 연동 관련 정보를 찾고 계신가요?
+              가민 제품 사용법, 운동 팁, 그리고 다른 가민 사용자들과의 소통을 원하시나요?
             </div>
             <div className="chat-bubble">
-              아래 메뉴를 통해 원하는 정보를 찾아보세요!
+              아래 메뉴를 통해 커뮤니티에 참여하고 정보를 찾아보세요!
             </div>
           </div>
         </div>
@@ -43,7 +41,7 @@ function Home() {
             <span className="feature-icon">❓</span>
             <h3 className="feature-title">자주 묻는 질문</h3>
             <p className="feature-description">
-              가민 제품과 카카오톡 연동에 대한 자주 묻는 질문들을 모아놨어요.
+              가민 제품 사용법과 커뮤니티 관련 자주 묻는 질문들을 모아놨어요.
               빠른 답변을 찾아보세요!
             </p>
           </Link>
@@ -52,8 +50,8 @@ function Home() {
             <span className="feature-icon">💬</span>
             <h3 className="feature-title">질문과 답변</h3>
             <p className="feature-description">
-              커뮤니티에서 나눈 실제 질문과 답변들을 확인하고,
-              새로운 질문도 올려보세요!
+              가민 사용자들과 경험을 나누고 궁금한 점을 함께 해결해보세요.
+              새로운 친구도 만들어보세요!
             </p>
           </Link>
         </div>
@@ -67,37 +65,33 @@ function Home() {
             </p>
           </Link>
 
-          <div className="feature-card">
-            <span className="feature-icon">🔗</span>
-            <h3 className="feature-title">카카오톡 연동</h3>
+          {/* <div className="feature-card">
+            <span className="feature-icon">🏃‍♂️</span>
+            <h3 className="feature-title">운동 팁 & 경험</h3>
             <p className="feature-description">
-              가민 디바이스와 카카오톡을 연동하는 방법을 단계별로 설명합니다.
+              가민과 함께하는 운동 팁과 다른 사용자들의 경험담을 공유합니다.
             </p>
           </div>
 
           <div className="feature-card">
-            <span className="feature-icon">📱</span>
-            <h3 className="feature-title">모바일 앱</h3>
+            <span className="feature-icon">�</span>
+            <h3 className="feature-title">커뮤니티 모임</h3>
             <p className="feature-description">
-              Garmin Connect 앱과 카카오톡의 효율적인 사용법을 안내합니다.
+              지역별 가민 사용자 모임과 함께 운동할 친구들을 찾아보세요.
             </p>
-          </div>
+          </div> */}
         </div>
 
         {/* Latest Updates Section */}
         <div className="card" style={{ marginTop: 'var(--spacing-2xl)' }}>
           <div className="card-header">
-            <h3 className="card-title">📢 최신 업데이트</h3>
+            <h3 className="card-title">📢 커뮤니티 소식</h3>
           </div>
           <div className="grid grid-2">
-            <div>
-              <h4>🆕 신규 FAQ 추가</h4>
-              <p>가민 Forerunner 시리즈와 카카오톡 알림 설정 관련 FAQ가 추가되었습니다.</p>
-              <small style={{ color: 'var(--text-secondary)' }}>2024.01.15</small>
-            </div>
+            
             <div>
               <h4>🔧 사이트 개선</h4>
-              <p>모바일 환경에서의 사용성이 개선되었고, 검색 기능이 추가되었습니다.</p>
+              <p>모바일 환경에서의 사용성이 개선되었고, 커뮤니티 검색 기능이 추가되었습니다.</p>
               <small style={{ color: 'var(--text-secondary)' }}>2024.01.10</small>
             </div>
           </div>

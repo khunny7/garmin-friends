@@ -47,9 +47,9 @@ function FAQ() {
         {
           id: 1,
           category: 'connection',
-          question: '가민 워치를 카카오톡과 어떻게 연결하나요?',
-          answer: '1. Garmin Connect 앱을 설치합니다.\n2. 앱에서 알림 설정으로 이동합니다.\n3. 카카오톡을 활성화합니다.\n4. 워치에서 알림을 허용합니다.',
-          tags: ['연결', '설정', '카카오톡'],
+          question: '가민 워치에서 스마트폰 알림을 어떻게 받나요?',
+          answer: '1. Garmin Connect 앱을 설치합니다.\n2. 앱에서 알림 설정으로 이동합니다.\n3. 원하는 앱들을 활성화합니다.\n4. 워치에서 알림을 허용합니다.',
+          tags: ['연결', '설정', '알림'],
           isActive: true
         }
       ];
@@ -100,7 +100,7 @@ function FAQ() {
         <div className="container">
           <h1 className="page-title">❓ 자주 묻는 질문</h1>
           <p className="page-subtitle">
-            가민과 카카오톡 관련 자주 묻는 질문들
+            가민 워치 사용에 관한 자주 묻는 질문들
           </p>
         </div>
       </div>
