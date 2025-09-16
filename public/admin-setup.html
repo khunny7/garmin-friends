@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Setup - Garmin Friends</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+            background: #218838;
+        }
+        #log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .user-info {
+            background: #e3f2fd;
+            border: 1px solid #1976d2;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 Admin Setup - Garmin Friends</h1>
+        
+        <div class="info">
+            <strong>📋 이 도구의 목적:</strong><br>
+            • 현재 로그인한 사용자를 관리자로 설정<br>
+            • QNA → FAQ 변환 기능 활성화<br>
+            • 관리자 권한 테스트
+        </div>
+
+        <div id="userInfo" class="user-info" style="display: none;">
+            <h3>👤 현재 사용자 정보</h3>
+            <div id="currentUser"></div>
+        </div>
+
+        <div style="margin: 20px 0;">
+            <button id="loginBtn" onclick="signIn()" style="background: #1976d2;">🔐 Google 로그인</button>
+            <button id="makeAdminBtn" onclick="makeAdmin()" style="display: none;">👑 관리자로 설정</button>
+            <button id="checkStatusBtn" onclick="checkStatus()" style="display: none; background: #17a2b8;">🔍 상태 확인</button>
+        </div>
+
+        <h3>📊 실행 로그</h3>
+        <div id="log">관리자 설정 도구에 오신 것을 환영합니다!\n\n1. 먼저 Google로 로그인하세요\n2. "관리자로 설정" 버튼을 클릭하세요\n3. QNA 페이지에서 "📚 FAQ로 변환" 버튼을 확인하세요</div>
+    </div>
+
+    <script type="module">
+        // Firebase imports
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+        import { getFirestore, doc, updateDoc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-9knkYwOfGjjZhJZV5NCvN5eafBf9_Wo",
+            authDomain: "garmin-friends.firebaseapp.com",
+            projectId: "garmin-friends",
+            storageBucket: "garmin-friends.firebasestorage.app",
+            messagingSenderId: "379717147009",
+            appId: "1:379717147009:web:090359a228ca41f7d67080"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        let currentUser = null;
+
+        // Log function
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // Display user info
+        function displayUserInfo(user) {
+            const userInfoDiv = document.getElementById('userInfo');
+            const currentUserDiv = document.getElementById('currentUser');
+            
+            currentUserDiv.innerHTML = `
+                <p><strong>이름:</strong> ${user.displayName || '설정되지 않음'}</p>
+                <p><strong>이메일:</strong> ${user.email}</p>
+                <p><strong>UID:</strong> ${user.uid}</p>
+                <img src="${user.photoURL}" alt="Profile" style="width: 50px; height: 50px; border-radius: 50%;">
+            `;
+            
+            userInfoDiv.style.display = 'block';
+        }
+
+        // Sign in function
+        window.signIn = async function() {
+            try {
+                log('Google 로그인을 시도합니다...');
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                
+                log(`✅ 로그인 성공: ${user.displayName} (${user.email})`);
+                
+                // Create/update user document
+                const userRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userRef);
+                
+                const userData = {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
+                    lastLogin: new Date(),
+                    isAdmin: userDoc.exists() ? userDoc.data().isAdmin || false : false
+                };
+
+                if (!userDoc.exists()) {
+                    await setDoc(userRef, {
+                        ...userData,
+                        createdAt: new Date()
+                    });
+                    log('✅ 새 사용자 프로필이 생성되었습니다.');
+                } else {
+                    await setDoc(userRef, userData, { merge: true });
+                    log('✅ 사용자 프로필이 업데이트되었습니다.');
+                }
+                
+            } catch (error) {
+                log(`❌ 로그인 실패: ${error.message}`);
+            }
+        };
+
+        // Make admin function
+        window.makeAdmin = async function() {
+            if (!currentUser) {
+                log('❌ 로그인이 필요합니다.');
+                return;
+            }
+
+            try {
+                log('관리자 권한을 설정합니다...');
+                
+                const userRef = doc(db, 'users', currentUser.uid);
+                await updateDoc(userRef, {
+                    isAdmin: true,
+                    adminSetAt: new Date(),
+                    updatedAt: new Date()
+                });
+                
+                log(`✅ ${currentUser.displayName}님이 관리자로 설정되었습니다!`);
+                log('🎉 이제 QNA 페이지에서 "📚 FAQ로 변환" 버튼을 확인할 수 있습니다.');
+                log('💡 페이지를 새로고침하여 변경사항을 적용하세요.');
+                
+            } catch (error) {
+                log(`❌ 관리자 설정 실패: ${error.message}`);
+            }
+        };
+
+        // Check status function
+        window.checkStatus = async function() {
+            if (!currentUser) {
+                log('❌ 로그인이 필요합니다.');
+                return;
+            }
+
+            try {
+                log('현재 관리자 상태를 확인합니다...');
+                
+                const userRef = doc(db, 'users', currentUser.uid);
+                const userDoc = await getDoc(userRef);
+                
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    const isAdmin = userData.isAdmin || false;
+                    
+                    log(`👤 사용자: ${currentUser.displayName}`);
+                    log(`📧 이메일: ${currentUser.email}`);
+                    log(`👑 관리자 상태: ${isAdmin ? '✅ 예' : '❌ 아니오'}`);
+                    
+                    if (isAdmin) {
+                        log('🎉 관리자 권한이 활성화되어 있습니다!');
+                    } else {
+                        log('ℹ️ 관리자 권한이 없습니다. "관리자로 설정" 버튼을 클릭하세요.');
+                    }
+                } else {
+                    log('❌ 사용자 문서를 찾을 수 없습니다.');
+                }
+                
+            } catch (error) {
+                log(`❌ 상태 확인 실패: ${error.message}`);
+            }
+        };
+
+        // Auth state observer
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            
+            if (user) {
+                displayUserInfo(user);
+                document.getElementById('loginBtn').style.display = 'none';
+                document.getElementById('makeAdminBtn').style.display = 'inline-block';
+                document.getElementById('checkStatusBtn').style.display = 'inline-block';
+                
+                log(`🔄 인증 상태 변경: ${user.displayName}님이 로그인됨`);
+            } else {
+                document.getElementById('userInfo').style.display = 'none';
+                document.getElementById('loginBtn').style.display = 'inline-block';
+                document.getElementById('makeAdminBtn').style.display = 'none';
+                document.getElementById('checkStatusBtn').style.display = 'none';
+                
+                log('🔄 로그아웃됨');
+            }
+        });
+    </script>
+</body>
+</html>

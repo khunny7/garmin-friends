@@ -1,11 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { qnaService } from '../services/firebaseService';
+import { useAuth } from '../hooks/useAuth';
+import ProtectedRoute from '../components/ProtectedRoute';
+import QNAToFAQConverter from '../components/QNAToFAQConverter';
 
 function QNA() {
   const [questions, setQuestions] = useState([]);
   const [newQuestion, setNewQuestion] = useState('');
   const [newQuestionTitle, setNewQuestionTitle] = useState('');
+  const [newQuestionCategory, setNewQuestionCategory] = useState('troubleshoot');
   const [showForm, setShowForm] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  
+  // Answer functionality state
+  const [showAnswerForm, setShowAnswerForm] = useState({});
+  const [newAnswers, setNewAnswers] = useState({});
+  const [submittingAnswer, setSubmittingAnswer] = useState({});
+  
+  // QNA to FAQ conversion state
+  const [showConverter, setShowConverter] = useState(null);
+
+  const { user, isAdmin } = useAuth();
 
   // Sample Q&A data - in real app, this would come from Firebase
   const sampleQuestions = [
@@ -80,33 +98,237 @@ function QNA() {
     { value: 'tips', label: '팁', icon: '💡' }
   ];
 
+  // Load questions from Firebase
+  const loadQuestions = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const questionsData = await qnaService.getQuestions(selectedCategory);
+      setQuestions(questionsData);
+    } catch (err) {
+      console.error('Error loading questions:', err);
+      setError('질문을 불러오는데 실패했습니다.');
+      
+      // Fallback to sample data if Firebase fails
+      const sampleQuestions = [
+        {
+          id: 1,
+          title: 'Forerunner 245와 카카오톡 연동 문제',
+          question: '안녕하세요! Forerunner 245를 사용하고 있는데 카카오톡 알림이 간헐적으로만 와요.',
+          authorName: '러닝맨123',
+          category: 'troubleshoot',
+          likes: 5,
+          answers: [],
+          answerCount: 2,
+          createdAt: { toDate: () => new Date('2024-01-15') }
+        }
+      ];
+      setQuestions(sampleQuestions);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedCategory]);
+
   useEffect(() => {
-    setQuestions(sampleQuestions);
-  }, []);
+    loadQuestions();
+  }, [loadQuestions]);
+
+  // Submit new question
+  const handleSubmitQuestion = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+    
+    if (!newQuestionTitle.trim() || !newQuestion.trim()) {
+      alert('제목과 내용을 모두 입력해주세요.');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      
+      const questionData = {
+        title: newQuestionTitle.trim(),
+        question: newQuestion.trim(),
+        category: newQuestionCategory
+      };
+
+      await qnaService.createQuestion(questionData, user);
+      
+      // Reset form
+      setNewQuestionTitle('');
+      setNewQuestion('');
+      setNewQuestionCategory('troubleshoot');
+      setShowForm(false);
+      
+      // Reload questions
+      await loadQuestions();
+      
+      alert('질문이 성공적으로 등록되었습니다!');
+    } catch (err) {
+      console.error('Error submitting question:', err);
+      alert('질문 등록에 실패했습니다.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Toggle like on question
+  const handleLikeQuestion = async (questionId) => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    try {
+      await qnaService.toggleLikeQuestion(questionId, user.uid);
+      await loadQuestions(); // Reload to update like count
+    } catch (err) {
+      console.error('Error toggling like:', err);
+      alert('좋아요 처리에 실패했습니다.');
+    }
+  };
+
+  // Delete question
+  const handleDeleteQuestion = async (questionId, questionAuthor) => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    // Check if user is author or admin
+    const isAuthor = user.uid === questionAuthor;
+    
+    if (!isAuthor && !isAdmin) {
+      alert('질문을 삭제할 권한이 없습니다.');
+      return;
+    }
+
+    if (!confirm('정말로 이 질문을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      await qnaService.deleteQuestion(questionId, user.uid, isAdmin);
+      await loadQuestions(); // Reload to remove deleted question
+      alert('질문이 삭제되었습니다.');
+    } catch (err) {
+      console.error('Error deleting question:', err);
+      alert('질문 삭제에 실패했습니다.');
+    }
+  };
+
+  // Submit answer
+  const handleSubmitAnswer = async (questionId) => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    const answerContent = newAnswers[questionId]?.trim();
+    if (!answerContent) {
+      alert('답변 내용을 입력해주세요.');
+      return;
+    }
+
+    // Create temp answer for optimistic update
+    const tempAnswer = {
+      id: `temp-${Date.now()}`,
+      content: answerContent,
+      author: user.uid,
+      authorName: user.displayName || user.email || '익명 사용자',
+      authorPhoto: user.photoURL,
+      createdAt: { toDate: () => new Date() },
+      likes: 0,
+      likedBy: [],
+      isActive: true
+    };
+
+    try {
+      setSubmittingAnswer(prev => ({ ...prev, [questionId]: true }));
+      
+      // Optimistic update - add answer immediately to UI
+      setQuestions(prevQuestions => 
+        prevQuestions.map(q => {
+          if ((q.docId || q.id) === questionId) {
+            return {
+              ...q,
+              answers: [...(q.answers || []), tempAnswer],
+              answerCount: (q.answerCount || 0) + 1
+            };
+          }
+          return q;
+        })
+      );
+
+      // Clear form immediately
+      setNewAnswers(prev => ({ ...prev, [questionId]: '' }));
+      setShowAnswerForm(prev => ({ ...prev, [questionId]: false }));
+      
+      // Actually submit to Firebase
+      const answerId = await qnaService.createAnswer(questionId, {
+        content: answerContent
+      }, user);
+
+      // Update the temporary answer with real ID from Firebase
+      setQuestions(prevQuestions => 
+        prevQuestions.map(q => {
+          if ((q.docId || q.id) === questionId) {
+            return {
+              ...q,
+              answers: q.answers.map(answer => 
+                answer.id === tempAnswer.id 
+                  ? { ...answer, id: answerId }
+                  : answer
+              )
+            };
+          }
+          return q;
+        })
+      );
+      
+    } catch (err) {
+      console.error('Error submitting answer:', err);
+      alert('답변 등록에 실패했습니다.');
+      
+      // Rollback optimistic update on error
+      setQuestions(prevQuestions => 
+        prevQuestions.map(q => {
+          if ((q.docId || q.id) === questionId) {
+            return {
+              ...q,
+              answers: q.answers.filter(answer => answer.id !== tempAnswer.id),
+              answerCount: Math.max((q.answerCount || 0) - 1, 0)
+            };
+          }
+          return q;
+        })
+      );
+    } finally {
+      setSubmittingAnswer(prev => ({ ...prev, [questionId]: false }));
+    }
+  };
+
+  // Toggle answer form
+  const toggleAnswerForm = (questionId) => {
+    setShowAnswerForm(prev => ({
+      ...prev,
+      [questionId]: !prev[questionId]
+    }));
+  };
+
+  // Handle FAQ conversion success
+  const handleFAQConversionSuccess = () => {
+    alert('✅ QNA가 FAQ로 성공적으로 변환되었습니다!');
+    setShowConverter(null);
+  };
 
   const filteredQuestions = selectedCategory === 'all' 
     ? questions 
     : questions.filter(q => q.category === selectedCategory);
-
-  const handleSubmitQuestion = (e) => {
-    e.preventDefault();
-    if (newQuestionTitle.trim() && newQuestion.trim()) {
-      const newQ = {
-        id: Date.now(),
-        title: newQuestionTitle,
-        question: newQuestion,
-        author: '익명사용자',
-        date: new Date().toISOString().split('T')[0],
-        category: 'general',
-        likes: 0,
-        answers: []
-      };
-      setQuestions([newQ, ...questions]);
-      setNewQuestionTitle('');
-      setNewQuestion('');
-      setShowForm(false);
-    }
-  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -147,28 +369,59 @@ function QNA() {
                 </button>
               ))}
             </div>
-            <button 
-              onClick={() => setShowForm(!showForm)}
-              className="btn btn-accent"
-            >
-              ✏️ 질문하기
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}>
+              {/* Debug admin status */}
+              {user && (
+                <span style={{ 
+                  fontSize: 'var(--font-size-xs)', 
+                  color: 'var(--text-secondary)',
+                  background: isAdmin ? '#d4edda' : '#f8d7da',
+                  padding: '4px 8px',
+                  borderRadius: '4px'
+                }}>
+                  Admin: {isAdmin ? '✅' : '❌'}
+                </span>
+              )}
+              <button 
+                onClick={() => setShowForm(!showForm)}
+                className="btn btn-accent"
+              >
+                ✏️ 질문하기
+              </button>
+            </div>
           </div>
         </div>
 
         {/* New Question Form */}
         {showForm && (
-          <div className="card fade-in" style={{ border: '2px solid var(--accent-color)' }}>
-            <h3 style={{ color: 'var(--accent-color)', marginBottom: 'var(--spacing-md)' }}>
-              ✏️ 새 질문 작성
-            </h3>
-            <form onSubmit={handleSubmitQuestion}>
-              <div style={{ marginBottom: 'var(--spacing-md)' }}>
-                <input
-                  type="text"
-                  placeholder="질문 제목을 입력하세요..."
-                  value={newQuestionTitle}
-                  onChange={(e) => setNewQuestionTitle(e.target.value)}
+          <ProtectedRoute>
+            <div className="card fade-in" style={{ border: '2px solid var(--accent-color)' }}>
+              <h3 style={{ color: 'var(--accent-color)', marginBottom: 'var(--spacing-md)' }}>
+                ✏️ 새 질문 작성
+              </h3>
+              <form onSubmit={handleSubmitQuestion}>
+                <div style={{ marginBottom: 'var(--spacing-md)' }}>
+                  <select
+                    value={newQuestionCategory}
+                    onChange={(e) => setNewQuestionCategory(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: 'var(--spacing-sm)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--radius-sm)',
+                      marginBottom: 'var(--spacing-sm)'
+                    }}
+                  >
+                    <option value="troubleshoot">문제해결</option>
+                    <option value="features">기능</option>
+                    <option value="setup">설정</option>
+                    <option value="tips">팁</option>
+                  </select>
+                  <input
+                    type="text"
+                    placeholder="질문 제목을 입력하세요..."
+                    value={newQuestionTitle}
+                    onChange={(e) => setNewQuestionTitle(e.target.value)}
                   style={{
                     width: '100%',
                     padding: 'var(--spacing-md)',
@@ -212,18 +465,36 @@ function QNA() {
               </div>
             </form>
           </div>
+          </ProtectedRoute>
         )}
 
         {/* Questions List */}
         <div style={{ marginTop: 'var(--spacing-lg)' }}>
-          {filteredQuestions.length === 0 ? (
+          {loading ? (
+            <div className="card text-center">
+              <h3>질문을 불러오는 중...</h3>
+              <p>잠시만 기다려주세요.</p>
+            </div>
+          ) : error ? (
+            <div className="card text-center" style={{ borderColor: '#ff6b35' }}>
+              <h3 style={{ color: '#ff6b35' }}>오류가 발생했습니다</h3>
+              <p>{error}</p>
+              <button 
+                onClick={loadQuestions} 
+                className="btn btn-primary"
+                style={{ marginTop: 'var(--spacing-md)' }}
+              >
+                다시 시도
+              </button>
+            </div>
+          ) : filteredQuestions.length === 0 ? (
             <div className="card text-center">
               <h3>아직 질문이 없습니다</h3>
               <p>첫 번째 질문을 올려보세요!</p>
             </div>
           ) : (
             filteredQuestions.map(question => (
-              <div key={question.id} className="card" style={{ marginBottom: 'var(--spacing-lg)' }}>
+              <div key={question.docId || question.id} className="card" style={{ marginBottom: 'var(--spacing-lg)' }}>
                 {/* Question Header */}
                 <div style={{ marginBottom: 'var(--spacing-md)' }}>
                   <h3 style={{ 
@@ -240,8 +511,8 @@ function QNA() {
                     color: 'var(--text-secondary)',
                     marginBottom: 'var(--spacing-sm)'
                   }}>
-                    <span>👤 {question.author}</span>
-                    <span>📅 {formatDate(question.date)}</span>
+                    <span>👤 {question.authorName || question.author}</span>
+                    <span>📅 {formatDate(question.createdAt?.toDate ? question.createdAt.toDate() : question.date)}</span>
                   </div>
                 </div>
 
@@ -249,7 +520,7 @@ function QNA() {
                 <div className="chat-section" style={{ margin: 'var(--spacing-md) 0' }}>
                   <div className="chat-header">
                     <div className="chat-avatar">❓</div>
-                    <div className="chat-user">{question.author}</div>
+                    <div className="chat-user">{question.authorName || question.author}</div>
                   </div>
                   <div className="chat-messages">
                     <div className="chat-bubble user" style={{ marginLeft: 0, maxWidth: '100%' }}>
@@ -258,8 +529,30 @@ function QNA() {
                   </div>
                 </div>
 
+                {/* Like Button and Stats */}
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 'var(--spacing-md)', 
+                  marginTop: 'var(--spacing-md)',
+                  borderTop: '1px solid var(--border-color)',
+                  paddingTop: 'var(--spacing-md)'
+                }}>
+                  <button
+                    onClick={() => handleLikeQuestion(question.docId || question.id)}
+                    className="btn btn-secondary"
+                    style={{ fontSize: 'var(--font-size-sm)' }}
+                    disabled={!user}
+                  >
+                    👍 좋아요 ({question.likes || 0})
+                  </button>
+                  <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}>
+                    💬 답변 {question.answerCount || question.answers?.length || 0}개
+                  </span>
+                </div>
+
                 {/* Answers */}
-                {question.answers.length > 0 && (
+                {(question.answers?.length > 0 || question.answerCount > 0) && (
                   <div style={{ marginTop: 'var(--spacing-lg)' }}>
                     <h4 style={{ 
                       color: 'var(--text-primary)', 
@@ -268,18 +561,18 @@ function QNA() {
                       alignItems: 'center',
                       gap: 'var(--spacing-sm)'
                     }}>
-                      💡 답변 ({question.answers.length}개)
+                      💡 답변 ({question.answers?.length || 0}개)
                     </h4>
-                    {question.answers.map(answer => (
-                      <div key={answer.id} className="chat-section" style={{ margin: 'var(--spacing-sm) 0' }}>
+                    {question.answers?.map((answer, index) => (
+                      <div key={answer.id || `answer-${index}`} className="chat-section" style={{ margin: 'var(--spacing-sm) 0' }}>
                         <div className="chat-header">
                           <div className="chat-avatar">💬</div>
-                          <div className="chat-user">{answer.author}</div>
+                          <div className="chat-user">{answer.authorName || answer.author}</div>
                           <span style={{ 
                             fontSize: 'var(--font-size-xs)', 
                             color: 'var(--text-secondary)' 
                           }}>
-                            {formatDate(answer.date)}
+                            {formatDate(answer.date || answer.createdAt?.toDate?.())}
                           </span>
                         </div>
                         <div className="chat-messages">
@@ -316,13 +609,118 @@ function QNA() {
                     fontSize: 'var(--font-size-sm)',
                     color: 'var(--text-secondary)'
                   }}>
-                    <span>👍 {question.likes}</span>
-                    <span>💬 {question.answers.length}개 답변</span>
+                    <button
+                      onClick={() => handleLikeQuestion(question.docId || question.id)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: 'var(--text-secondary)',
+                        fontSize: 'var(--font-size-sm)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                      disabled={!user}
+                    >
+                      👍 {question.likes || 0}
+                    </button>
+                    <span>💬 {question.answers?.length || 0}개 답변</span>
                   </div>
-                  <button className="btn btn-secondary" style={{ fontSize: 'var(--font-size-sm)' }}>
-                    💬 답변하기
-                  </button>
+                  <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
+                    <button 
+                      onClick={() => toggleAnswerForm(question.docId || question.id)}
+                      className="btn btn-secondary" 
+                      style={{ fontSize: 'var(--font-size-sm)' }}
+                    >
+                      💬 답변하기
+                    </button>
+                    {user && isAdmin && (
+                      <button 
+                        onClick={() => setShowConverter(question)}
+                        className="btn btn-accent"
+                        style={{ 
+                          fontSize: 'var(--font-size-sm)',
+                          backgroundColor: '#28a745',
+                          borderColor: '#28a745',
+                          color: 'white'
+                        }}
+                      >
+                        📚 FAQ로 변환
+                      </button>
+                    )}
+                    {user && (user.uid === question.author || isAdmin) && (
+                      <button 
+                        onClick={() => handleDeleteQuestion(question.docId || question.id, question.author)}
+                        className="btn btn-outline"
+                        style={{ 
+                          fontSize: 'var(--font-size-sm)',
+                          color: '#ff6b35',
+                          borderColor: '#ff6b35'
+                        }}
+                      >
+                        🗑️ 삭제
+                      </button>
+                    )}
+                  </div>
                 </div>
+
+                {/* Answer Form */}
+                {user && showAnswerForm[question.docId || question.id] && (
+                  <ProtectedRoute>
+                  <div style={{ 
+                    marginTop: 'var(--spacing-md)',
+                    padding: 'var(--spacing-md)',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)'
+                  }}>
+                    <h4 style={{ 
+                      marginBottom: 'var(--spacing-md)',
+                      color: 'var(--primary-color)',
+                      fontSize: 'var(--font-size-md)'
+                    }}>
+                      💬 답변 작성
+                    </h4>
+                    <textarea
+                      value={newAnswers[question.docId || question.id] || ''}
+                      onChange={(e) => setNewAnswers(prev => ({
+                        ...prev,
+                        [question.docId || question.id]: e.target.value
+                      }))}
+                      placeholder="도움이 되는 답변을 작성해주세요..."
+                      style={{
+                        width: '100%',
+                        minHeight: '100px',
+                        padding: 'var(--spacing-md)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '8px',
+                        fontSize: 'var(--font-size-sm)',
+                        fontFamily: 'inherit',
+                        resize: 'vertical',
+                        marginBottom: 'var(--spacing-md)'
+                      }}
+                    />
+                    <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
+                      <button
+                        onClick={() => handleSubmitAnswer(question.docId || question.id)}
+                        disabled={submittingAnswer[question.docId || question.id]}
+                        className="btn btn-primary"
+                        style={{ fontSize: 'var(--font-size-sm)' }}
+                      >
+                        {submittingAnswer[question.docId || question.id] ? '📤 등록 중...' : '📝 답변 등록'}
+                      </button>
+                      <button
+                        onClick={() => toggleAnswerForm(question.docId || question.id)}
+                        className="btn btn-secondary"
+                        style={{ fontSize: 'var(--font-size-sm)' }}
+                      >
+                        취소
+                      </button>
+                    </div>
+                  </div>
+                  </ProtectedRoute>
+                )}
               </div>
             ))
           )}
@@ -347,6 +745,15 @@ function QNA() {
           </div>
         </div>
       </div>
+
+      {/* QNA to FAQ Converter Modal */}
+      {showConverter && (
+        <QNAToFAQConverter
+          question={showConverter}
+          onClose={() => setShowConverter(null)}
+          onSuccess={handleFAQConversionSuccess}
+        />
+      )}
     </div>
   );
 }

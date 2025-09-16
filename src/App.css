@@ -42,10 +42,17 @@
   background: white;
   overflow-x: auto;
   gap: var(--spacing-sm);
+  justify-content: space-between;
+  align-items: center;
 }
 
 .nav-menu li {
   flex-shrink: 0;
+}
+
+.nav-auth {
+  margin-left: auto;
+  padding-left: var(--spacing-md);
 }
 
 .nav-link {
