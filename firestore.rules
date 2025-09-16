@@ -93,11 +93,9 @@ service cloud.firestore {
     
     // Friend Posts collection
     match /friendPosts/{postId} {
-      // Anyone can read active and non-expired friend posts
-      // Admins can read all posts (including expired ones)
-      allow read: if (resource.data.isActive == true && 
-                     resource.data.expiresAt > request.time) ||
-                     isAdmin();
+      // Anyone can read active friend posts (expiration handled in app code)
+      // Admins can read all posts (including inactive ones)
+      allow read: if resource.data.isActive == true || isAdmin();
       
       // Authenticated users can create friend posts
       allow create: if isAuthenticated() &&

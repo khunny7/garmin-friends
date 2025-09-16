@@ -352,13 +352,6 @@ function FriendFinder() {
                       fontSize: 'var(--font-size-base)'
                     }}
                   />
-                  <small style={{ color: 'var(--text-secondary)', fontSize: 'var(--font-size-sm)', display: 'block', marginTop: 'var(--spacing-xs)' }}>
-                    <strong>프로필 URL 얻는 방법:</strong><br/>
-                    1. 가민 커넥트 앱 또는 웹사이트에 로그인<br/>
-                    2. 프로필 → 설정(⚙️) → 개인정보 보호<br/>
-                    3. "활동 공개 범위"를 "모든 사람"으로 설정<br/>
-                    4. 프로필 페이지에서 URL 복사 (예: https://connect.garmin.com/modern/profile/your-username)
-                  </small>
                 </div>
 
                 <div style={{ marginBottom: 'var(--spacing-md)' }}>

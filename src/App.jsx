@@ -8,6 +8,7 @@ import QNA from './pages/QNA';
 import GarminInfo from './pages/GarminInfo';
 import FriendFinder from './pages/FriendFinder';
 import AdminPanel from './pages/AdminPanel';
+import SetAdmin from './pages/SetAdmin';
 import UserProfile from './components/UserProfile';
 import LoginButton from './components/LoginButton';
 import './App.css';
@@ -15,13 +16,16 @@ import './App.css';
 // Navigation component
 function Navigation() {
   const location = useLocation();
-  const { isAdmin } = useAuth();
+  const { isAdmin, user, userProfile } = useAuth();
+  
+  // Debug logging
+  console.log('Navigation - isAdmin:', isAdmin, 'user:', user?.email, 'userProfile:', userProfile);
   
   const navItems = [
     { path: '/', label: '홈', icon: '🏠' },
     { path: '/faq', label: 'FAQ', icon: '❓' },
     { path: '/qna', label: 'Q&A', icon: '💬' },
-    { path: '/friends', label: '친구 찾기', icon: '🤝' },
+    { path: '/friend-finder', label: '친구 찾기', icon: '🤝' },
     { path: '/garmin', label: '가민 정보', icon: '⌚' }
   ];
 
@@ -38,6 +42,12 @@ function Navigation() {
           Garmin Friends
         </h2>
         <p>가민 커뮤니티</p>
+        {/* Temporary debug info */}
+        {user && (
+          <small style={{ fontSize: '10px', opacity: 0.7 }}>
+            Debug: isAdmin={String(isAdmin)}, userProfile.isAdmin={String(userProfile?.isAdmin)}
+          </small>
+        )}
       </div>
       <ul className="nav-menu">
         <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
@@ -93,9 +103,10 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/qna" element={<QNA />} />
-              <Route path="/friends" element={<FriendFinder />} />
+              <Route path="/friend-finder" element={<FriendFinder />} />
               <Route path="/garmin" element={<GarminInfo />} />
               <Route path="/admin" element={<AdminPanel />} />
+              <Route path="/set-admin" element={<SetAdmin />} />
             </Routes>
           </main>
           <Footer />

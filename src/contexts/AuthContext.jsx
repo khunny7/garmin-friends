@@ -68,7 +68,12 @@ export function AuthProvider({ children }) {
       const userRef = doc(db, 'users', uid);
       const userDoc = await getDoc(userRef);
       if (userDoc.exists()) {
-        setUserProfile(userDoc.data());
+        const userData = userDoc.data();
+        console.log('User profile loaded:', userData);
+        setUserProfile(userData);
+      } else {
+        console.log('User document does not exist for uid:', uid);
+        setUserProfile(null);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -97,6 +102,14 @@ export function AuthProvider({ children }) {
     logout,
     isAdmin: userProfile?.isAdmin || false
   };
+
+  // Debug logging
+  console.log('AuthContext value:', {
+    hasUser: !!user,
+    userEmail: user?.email,
+    userProfile,
+    isAdmin: value.isAdmin
+  });
 
   return (
     <AuthContext.Provider value={value}>
