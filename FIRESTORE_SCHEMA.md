@@ -133,6 +133,47 @@ Stores answers to QNA questions as a subcollection.
 }
 ```
 
+### 4. friendPosts
+Stores friend finder posts where users share their Garmin profiles.
+
+**Document ID**: Auto-generated
+
+**Fields**:
+- `id`: number - Sequential ID for ordering
+- `name`: string - Display name for the post
+- `introduction`: string - User's self-introduction and what they're looking for
+- `garminProfileUrl`: string - URL to their Garmin Connect profile
+- `location`: string - Geographic location (optional)
+- `activities`: array[string] - List of activities/sports they're interested in
+- `author`: string - UID of the user who created the post
+- `authorName`: string - Display name of the author
+- `authorPhoto`: string - Profile photo URL of the author
+- `createdAt`: timestamp - When the post was created
+- `expiresAt`: timestamp - When the post should be automatically deleted
+- `likes`: number - Number of likes (denormalized for performance)
+- `likedBy`: array[string] - UIDs of users who liked this post
+- `isActive`: boolean - Whether the post is visible (default: true)
+
+**Sample Document**:
+```javascript
+{
+  id: 1,
+  name: "러닝맨123",
+  introduction: "서울에서 주로 러닝하고 있습니다! 함께 뛸 분들 환영해요 🏃‍♂️",
+  garminProfileUrl: "https://connect.garmin.com/modern/profile/username123",
+  location: "서울시 강남구",
+  activities: ["러닝", "사이클링"],
+  author: "user_uid_123",
+  authorName: "러닝맨123",
+  authorPhoto: "https://lh3.googleusercontent.com/...",
+  createdAt: timestamp,
+  expiresAt: timestamp,
+  likes: 5,
+  likedBy: ["uid1", "uid2", "uid3"],
+  isActive: true
+}
+```
+
 ## Indexes Required
 
 ### faqs collection:
@@ -153,11 +194,21 @@ Stores answers to QNA questions as a subcollection.
 - `createdAt` (single field)
 - `isActive, createdAt` (composite)
 
+### friendPosts collection:
+- `isActive` (single field)
+- `createdAt` (single field)
+- `expiresAt` (single field)
+- `activities` (array-contains)
+- `isActive, createdAt` (composite)
+- `isActive, expiresAt` (composite)
+- `author` (single field)
+
 ## Security Rules Summary
 
 1. **users**: Read access for authenticated users, write access only for own profile (except isAdmin field)
 2. **faqs**: Read access for all, write access only for admins
 3. **qna**: Read access for all, write access for authenticated users (own content only)
 4. **answers**: Read access for all, write access for authenticated users (own content only)
+5. **friendPosts**: Read access for all, write access for authenticated users (own content only)
 
 Admin users can read/write all collections and manage user roles.

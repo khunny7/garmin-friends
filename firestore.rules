@@ -91,6 +91,31 @@ service cloud.firestore {
       }
     }
     
+    // Friend Posts collection
+    match /friendPosts/{postId} {
+      // Anyone can read active and non-expired friend posts
+      allow read: if resource.data.isActive == true && 
+                     resource.data.expiresAt > request.time;
+      
+      // Authenticated users can create friend posts
+      allow create: if isAuthenticated() &&
+                       request.resource.data.author == request.auth.uid &&
+                       request.resource.data.authorName == request.auth.token.name &&
+                       request.resource.data.authorPhoto == request.auth.token.picture &&
+                       request.resource.data.isActive == true &&
+                       request.resource.data.expiresAt > request.time;
+      
+      // Users can update their own posts, admins can update any
+      allow update: if (isAuthenticated() && 
+                       resource.data.author == request.auth.uid) ||
+                       isAdmin();
+      
+      // Users can delete their own posts, admins can delete any
+      allow delete: if (isAuthenticated() && 
+                       resource.data.author == request.auth.uid) ||
+                       isAdmin();
+    }
+    
     // Garmin products - read only (legacy)
     match /products/{document} {
       allow read: if true;

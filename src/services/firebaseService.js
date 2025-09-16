@@ -499,3 +499,170 @@ export const userService = {
     }
   }
 };
+
+// Friend Posts Service
+export const friendPostsService = {
+  // Get all active friend posts
+  async getAll() {
+    try {
+      // Use simple query to avoid index requirement - filter expiration in JavaScript
+      const q = query(
+        collection(db, 'friendPosts'),
+        where('isActive', '==', true)
+      );
+      const snapshot = await getDocs(q);
+      const now = new Date();
+      
+      const posts = snapshot.docs
+        .map(doc => ({
+          docId: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate(),
+          expiresAt: doc.data().expiresAt?.toDate()
+        }))
+        // Filter out expired posts in JavaScript
+        .filter(post => post.expiresAt > now);
+
+      // Sort by creation date (newest first)
+      return posts.sort((a, b) => b.createdAt - a.createdAt);
+    } catch (error) {
+      console.error('Error fetching friend posts:', error);
+      throw error;
+    }
+  },
+
+  // Get next ID for friend post
+  async getNextId() {
+    try {
+      const snapshot = await getDocs(collection(db, 'friendPosts'));
+      const existingIds = snapshot.docs.map(doc => doc.data().id || 0);
+      return existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
+    } catch (error) {
+      console.error('Error getting next ID:', error);
+      return 1;
+    }
+  },
+
+  // Create new friend post
+  async create(postData, user) {
+    try {
+      const nextId = await this.getNextId();
+      
+      const friendPost = {
+        id: nextId,
+        name: postData.name,
+        introduction: postData.introduction,
+        garminProfileUrl: postData.garminProfileUrl,
+        location: postData.location || '',
+        activities: postData.activities || [],
+        author: user.uid,
+        authorName: user.displayName,
+        authorPhoto: user.photoURL,
+        createdAt: Timestamp.now(),
+        expiresAt: Timestamp.fromDate(new Date(postData.expiresAt)),
+        likes: 0,
+        likedBy: [],
+        isActive: true
+      };
+
+      const docRef = await addDoc(collection(db, 'friendPosts'), friendPost);
+      
+      return {
+        docId: docRef.id,
+        ...friendPost,
+        createdAt: friendPost.createdAt.toDate(),
+        expiresAt: friendPost.expiresAt.toDate()
+      };
+    } catch (error) {
+      console.error('Error creating friend post:', error);
+      throw error;
+    }
+  },
+
+  // Update friend post
+  async update(docId, updates) {
+    try {
+      await updateDoc(doc(db, 'friendPosts', docId), {
+        ...updates,
+        updatedAt: Timestamp.now()
+      });
+    } catch (error) {
+      console.error('Error updating friend post:', error);
+      throw error;
+    }
+  },
+
+  // Delete friend post (soft delete)
+  async delete(docId) {
+    try {
+      await updateDoc(doc(db, 'friendPosts', docId), {
+        isActive: false,
+        updatedAt: Timestamp.now()
+      });
+    } catch (error) {
+      console.error('Error deleting friend post:', error);
+      throw error;
+    }
+  },
+
+  // Like/unlike a friend post
+  async toggleLike(docId, userId) {
+    try {
+      const postRef = doc(db, 'friendPosts', docId);
+      const postDoc = await getDoc(postRef);
+      
+      if (!postDoc.exists()) {
+        throw new Error('Post not found');
+      }
+
+      const currentLikedBy = postDoc.data().likedBy || [];
+      const isLiked = currentLikedBy.includes(userId);
+
+      if (isLiked) {
+        // Unlike
+        await updateDoc(postRef, {
+          likes: increment(-1),
+          likedBy: currentLikedBy.filter(id => id !== userId),
+          updatedAt: Timestamp.now()
+        });
+      } else {
+        // Like
+        await updateDoc(postRef, {
+          likes: increment(1),
+          likedBy: [...currentLikedBy, userId],
+          updatedAt: Timestamp.now()
+        });
+      }
+
+      return !isLiked; // Return new like status
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      throw error;
+    }
+  },
+
+  // Clean up expired posts (admin function)
+  async cleanupExpired() {
+    try {
+      const q = query(
+        collection(db, 'friendPosts'),
+        where('isActive', '==', true),
+        where('expiresAt', '<=', Timestamp.now())
+      );
+      const snapshot = await getDocs(q);
+      
+      const updatePromises = snapshot.docs.map(docSnapshot => 
+        updateDoc(doc(db, 'friendPosts', docSnapshot.id), {
+          isActive: false,
+          updatedAt: Timestamp.now()
+        })
+      );
+
+      await Promise.all(updatePromises);
+      return snapshot.docs.length; // Return number of cleaned up posts
+    } catch (error) {
+      console.error('Error cleaning up expired posts:', error);
+      throw error;
+    }
+  }
+};

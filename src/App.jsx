@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import FAQ from './pages/FAQ';
 import QNA from './pages/QNA';
 import GarminInfo from './pages/GarminInfo';
+import FriendFinder from './pages/FriendFinder';
 import AdminPanel from './pages/AdminPanel';
 import UserProfile from './components/UserProfile';
 import LoginButton from './components/LoginButton';
@@ -20,6 +21,7 @@ function Navigation() {
     { path: '/', label: '홈', icon: '🏠' },
     { path: '/faq', label: 'FAQ', icon: '❓' },
     { path: '/qna', label: 'Q&A', icon: '💬' },
+    { path: '/friends', label: '친구 찾기', icon: '🤝' },
     { path: '/garmin', label: '가민 정보', icon: '⌚' }
   ];
 
@@ -31,8 +33,11 @@ function Navigation() {
   return (
     <nav className="navigation">
       <div className="nav-brand">
-        <h2>🟡 가민 커넥트 친구 만들기</h2>
-        <p>카카오톡 오픈 채팅방, 가민 커넥트 친구 만들기 웹사이트</p>
+        <h2>
+          <img src="/icon.svg" alt="Garmin Friends" style={{ width: '24px', height: '24px', marginRight: '8px', verticalAlign: 'middle' }} />
+          Garmin Friends
+        </h2>
+        <p>가민 커뮤니티</p>
       </div>
       <ul className="nav-menu">
         <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
@@ -88,6 +93,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/qna" element={<QNA />} />
+              <Route path="/friends" element={<FriendFinder />} />
               <Route path="/garmin" element={<GarminInfo />} />
               <Route path="/admin" element={<AdminPanel />} />
             </Routes>
